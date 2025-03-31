@@ -18,7 +18,7 @@ public class KafkaTopicHelper {
      * parameter topicName
      *
      * @param topicName the name of the topic to create
-     * @return a {@link org.apache.kafka.clients.admin.TopicListing} object
+     * @return a {@link TopicListing} object
      * @throws Exception the exception
      */
     public static TopicListing createFixedTopic(String topicName) throws Exception {
@@ -76,7 +76,7 @@ public class KafkaTopicHelper {
         return newTopicName;
     }
 
-    private static String getCurrentUtcTimestamp() throws ParseException {
+    private static String getCurrentUtcTimestamp() {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MMM-dd");
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
         return simpleDateFormat.format(new Date());

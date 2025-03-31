@@ -13,7 +13,7 @@ public class PropertiesHelper {
      * Gets a Properties object that contains the keys and values defined
      * in the file src/main/resources/config.properties
      *
-     * @return a {@link java.util.Properties} object
+     * @return a {@link Properties} object
      * @throws Exception Thrown if the file config.properties is not available
      *                   in the directory src/main/resources
      */

@@ -5,8 +5,8 @@ import org.apache.log4j.Logger;
 import org.json.simple.JSONObject;
 
 /**
- * An implementation of the interface {@link com.demo.kafka.KafkaMessageHandler}.
- *
+ * An implementation of the interface {@link KafkaMessageHandler}.
+
  * The class implements the processMessage() method. Typically, this class is used
  * to supply callback behavior for this project's producers and consumers.
  */
@@ -15,7 +15,6 @@ public class KafkaMessageHandlerImpl implements KafkaMessageHandler{
 
     @Override
     public void processMessage(String topicName, ConsumerRecord<String, String> message) throws Exception {
-        String position = message.partition() + "-" + message.offset();
         String source = KafkaMessageHandlerImpl.class.getName();
         JSONObject obj = MessageHelper.getMessageLogEntryJSON(source, topicName,message.key(),message.value());
         log.info(obj.toJSONString());
