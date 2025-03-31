@@ -3,7 +3,6 @@ package com.demo.kafka;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
-import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.errors.WakeupException;
 import org.apache.log4j.Logger;
 
@@ -14,12 +13,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * The type SimpleConsumer is a class the demonstrates how to consume messages
  * from a Kafka cluster. The class provides functionality for the
- * {@link org.apache.kafka.clients.consumer.KafkaConsumer}.
+ * {@link KafkaConsumer}.
  */
 class SimpleConsumer extends AbstractSimpleKafka{
 
-    private final int TIME_OUT_MS = 5000;
+    private final int TIME_OUT_MS = 100;
     private KafkaConsumer<String, String> kafkaConsumer = null;
+    private KafkaRebalancer kafkaRebalencer = null;
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
 
@@ -41,7 +41,7 @@ class SimpleConsumer extends AbstractSimpleKafka{
      * The run method retrieves a collection of ConsumerRecords. The number of
      * ConsumerRecords retrieved is defined according to max.poll.records which
      * is defined in the file, config.properties.
-     *
+     * -
      * This method is provided as a convenience for testing purposes. It does
      * not use the KafkaConsumer internal to the class.
      *
@@ -67,15 +67,17 @@ class SimpleConsumer extends AbstractSimpleKafka{
 
         //make the consumer available for graceful shutdown
         setKafkaConsumer(consumer);
-        consumer.assign(Collections.singleton(new TopicPartition(topicName, 0)));
+        consumer.subscribe(List.of(topicName));
 
         int recNum = numOfRecs;
-        while (recNum > 0) {
+        int numTries = 0;
+        while (recNum > 0 || numTries < 100) {
             ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(TIME_OUT_MS));
             recNum = records.count();
             if (recNum == 0) {
                 log.info(MessageHelper.getSimpleJSONObject("No records retrieved"));
-                break;
+                numTries++;
+                continue;
             }
 
             for (ConsumerRecord<String, String> record : records) {
@@ -83,8 +85,7 @@ class SimpleConsumer extends AbstractSimpleKafka{
                 recNum--;
             }
         }
-
-        consumer.close();
+        this.shutdown();
     }
 
     private void close() throws Exception {
@@ -100,7 +101,7 @@ class SimpleConsumer extends AbstractSimpleKafka{
      * The runAlways method retrieves a collection of ConsumerRecords continuously.
      * The number of max number of records retrieved in each polling session back to
      * the Kafka broker is defined by the property max.poll.records as published by
-     * the class {@link com.demo.kafka.PropertiesHelper} object
+     * the class {@link PropertiesHelper} object
      *
      * @param topicName    the topic to access
      * @param callback the callback function that processes messages retrieved
@@ -111,10 +112,10 @@ class SimpleConsumer extends AbstractSimpleKafka{
         Properties props = PropertiesHelper.getProperties();
         //make the consumer available for graceful shutdown
         setKafkaConsumer(new KafkaConsumer<>(props));
-
+        setKafkaRebalencer(new KafkaRebalancer());
         //keep running forever or until shutdown() is called from another thread.
         try {
-            getKafkaConsumer().subscribe(List.of(topicName));
+            getKafkaConsumer().subscribe(List.of(topicName), kafkaRebalencer);
             while (!closed.get()) {
                 ConsumerRecords<String, String> records =
                         getKafkaConsumer().poll(Duration.ofMillis(TIME_OUT_MS));
@@ -132,7 +133,7 @@ class SimpleConsumer extends AbstractSimpleKafka{
         }
     }
     /**
-     * Shuts down the internal {@link org.apache.kafka.clients.consumer.KafkaConsumer}
+     * Shuts down the internal {@link KafkaConsumer}
      * This method is provided as a convenience for shutting down the consumer when
      * invoked using SimpleConsumer.runAlways().
      * @throws Exception the Exception that will get thrown upon an error
@@ -149,5 +150,9 @@ class SimpleConsumer extends AbstractSimpleKafka{
 
     public void setKafkaConsumer(KafkaConsumer<String, String> kafkaConsumer) {
         this.kafkaConsumer = kafkaConsumer;
+    }
+
+    public void setKafkaRebalencer(KafkaRebalancer kafkaRebalancer) {
+        this.kafkaRebalencer = kafkaRebalancer;
     }
 }

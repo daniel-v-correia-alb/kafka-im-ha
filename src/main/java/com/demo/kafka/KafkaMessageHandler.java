@@ -4,9 +4,9 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 
 /**
  * The interface KafkaMessageHandler.
- *
+
  * This interface is the template callback functions that can
- * be passed to an instance of the {@link com.demo.kafka.SimpleConsumer}
+ * be passed to an instance of the {@link SimpleConsumer}
  */
 @FunctionalInterface
 public interface KafkaMessageHandler {

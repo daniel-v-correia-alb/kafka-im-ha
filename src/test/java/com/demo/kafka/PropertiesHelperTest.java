@@ -6,12 +6,12 @@ import java.util.Properties;
 
 /**
  * This class contains the tests run against the
- * {@link com.demo.kafka.PropertiesHelper}
+ * {@link PropertiesHelper}
  */
 public class PropertiesHelperTest {
     /**
      * Tests that the expected properties are returned by
-     * the {@link com.demo.kafka.PropertiesHelper} class
+     * the {@link PropertiesHelper} class
      *
      * @throws Exception the exception
      */
